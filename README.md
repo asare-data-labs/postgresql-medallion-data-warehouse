@@ -4,6 +4,24 @@ This project delivers an end-to-end data pipeline built on **PostgreSQL**, utili
 
 ---
 
+## 📐 System Architecture & Visual Design
+
+The project implements a structured Medallion pipeline, separating raw ingestion, clean transformation, and star-schema dimensional modeling. Visual documentation and design assets are stored in the [`docs/`](./docs) directory:
+
+### 1. High-Level Data Architecture
+![Data Architecture](docs/data_architecture.svg)
+
+### 2. End-to-End Pipeline Data Flow
+![Pipeline Data Flow](docs/pipeline_data_flow.svg)
+
+### 3. Data Integration & Orchestration Model
+![Data Integration](docs/data_integration.svg)
+
+### 4. Gold Layer Sales Mart (Star Schema)
+![Sales Mart](docs/sales_mart.svg)
+
+---
+
 ## Module 1: Data Warehousing (Engineering)
 
 ### 1. Introduction
@@ -16,13 +34,13 @@ The core data warehousing engine manages raw data ingestion, transformation, and
 
 ### 3. Objective
 * Implement operational isolation across Bronze (Staging), Silver (Cleansed), and Gold (Dimensional) layers.
-* Automate data cleansing, type casting, NULL handling, and deduplication using stored procedures.
+* Automate data cleansing, type casting, NULL handling, and deduplication using stored procedures while preserving logical anomalies for revenue integrity.
 * Model raw transactional data into high-performance Star-Schema structures (Fact and Dimension tables).
 
 ### 4. Specification
 * **Bronze Layer (`bronze` schema):** Raw data staging maintaining source structure and append-only metadata.
-* **Silver Layer (`silver` schema):** Cleansed and standardized entities enforcing business validation rules and constraints.
-* **Gold Layer (`gold` schema):** Dimensional models featuring surrogate primary keys and enforced foreign key relationships.
+* **Silver Layer (`silver` schema):** Cleansed and standardized entities enforcing business validation rules and constraints via modular procedures.
+* **Gold Layer (`gold` schema):** Dimensional models featuring surrogate primary keys, left-join referential integrity, and business-friendly aliasing.
 
 ---
 
@@ -37,36 +55,40 @@ The analytics module exposes curated Gold-layer models to reporting tools and st
 
 ### 3. Objective
 * Deliver key performance indicators (KPIs) and business metrics with low-latency query execution.
-* Reduce reporting load on base tables using materialized views and targeted indexing.
-* Provide clean, self-serve data models for non-technical business analysts.
+* Reduce reporting load on base tables using optimized views and indexed foreign keys.
+* Provide clean, self-serve data models for business analysts.
 
 ### 4. Specification
 * **Analytical Views:** Pre-joined summary views aggregating revenue, customer metrics, and dimensional trends.
-* **Query Optimization:** Indexed foreign keys and optimized execution plans (`EXPLAIN ANALYZE`).
-* **Data Integrity:** Verification tests ensuring zero duplicate facts and accurate metric calculations.
+* **Query Optimization:** Optimized execution paths and surrogate key mappings.
+* **Data Integrity:** Verification tests ensuring zero duplicate surrogate keys and accurate metric calculations.
 
 ---
 
 ## Repository Structure
 
 ```text
-postgresql-medallion-data-warehouse/
-├── scripts/
-│   ├── 01_schema_setup.sql       # Schema initialization
-│   ├── 02_bronze_layer.sql       # Raw ingestion tables
-│   ├── 03_silver_layer.sql       # Cleansed PL/pgSQL procedures
-│   ├── 04_gold_layer.sql         # Fact & Dimension schema
-│   └── 05_analytical_views.sql   # Pre-aggregated reporting views
-├── tests/
-│   └── data_quality_checks.sql   # Integrity validation scripts
+postgres-medallion-pipeline/
+├── bronze/                     # Raw DDLs and ingestion staging scripts
+├── silver/                     # Cleansed PL/pgSQL procedures & master orchestrator
+│   └── master_orchestrator.sql
+├── gold/                       # Star schema views & inline QA validation scripts
+│   ├── dim_customers.sql
+│   ├── dim_products.sql
+│   └── fact_sales.sql
+├── docs/                       # Architecture diagrams & Data Dictionary
+│   ├── data_dictionary.md
+│   ├── data_architecture.svg
+│   ├── pipeline_data_flow.svg
+│   ├── data_integration.svg
+│   └── sales_mart.svg
 └── README.md
 
-
 Author & Brand
-About Asare Data Labs
-Asare Data Labs is an independent data engineering practice specializing in modern database architecture, performance tuning, and robust ETL/ELT pipelines using PostgreSQL and Python. Focused on delivering production-grade data infrastructure that scales cleanly for business intelligence and analytics.
+Asare Data Labs
+Asare Data Labs is an independent data engineering practice specializing in modern database architecture, performance tuning, and robust ETL/ELT pipelines using PostgreSQL. Focused on delivering production-grade data infrastructure that scales cleanly for business intelligence and analytics.
 •	GitHub: @asare-data-labs
 •	Services: Data Warehousing, SQL Optimization, PL/pgSQL Pipeline Automation, Dimensional Modeling
-
 License
 This project is licensed under the MIT License - see the LICENSE file for details. You are free to use, modify, and distribute this codebase for personal or commercial projects.
+
